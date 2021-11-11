@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    //"io/ioutil"
     "net/http"
 
     "github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func main() {
     router.GET("/albums/:id", getAlbumByID)
     router.POST("/albums", postAlbums)
 
-    router.Run("localhost:8080")
+    router.Run("0.0.0.0:8080")
 }
 
 func getAlbums(c *gin.Context) {
@@ -36,7 +37,11 @@ func getAlbums(c *gin.Context) {
 
 func postAlbums(c *gin.Context) {
     var newAlbum album
-
+    fmt.Println("lalala")
+    /*
+    buf, _ := ioutil.ReadAll(c.Request.Body)
+    fmt.Println(buf)
+    */
     if err := c.BindJSON(&newAlbum); err != nil {
         fmt.Println("can't resolve album data")
         return

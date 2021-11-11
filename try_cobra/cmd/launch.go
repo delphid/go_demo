@@ -13,7 +13,7 @@ func init() {
 }
 
 var launchProc = &cobra.Command{
-    Use:    "launch",
+    Use:    "launch_alala",
     Short:  "the launch proc",
     Long:   "use it to launch a rocket",
     Run:    func(cmd *cobra.Command, args []string) {
