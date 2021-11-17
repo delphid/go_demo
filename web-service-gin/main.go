@@ -1,6 +1,7 @@
 package main
 
 import (
+    "errors"
     "fmt"
     //"io/ioutil"
     "net/http"
@@ -8,6 +9,10 @@ import (
     "github.com/gin-gonic/gin"
 )
 
+
+type albumer interface {
+    GetTitle() string
+}
 
 type event struct {
     Title   string `json:"title"`
@@ -22,8 +27,12 @@ type album struct {
     Events  []event   `json:"events"`
 }
 
-var albums = []album{
-    {ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
+func (a album) GetTitle() string{
+    return a.Title
+}
+
+var albums = []albumer{
+    album{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
     {ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
     {ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99, Events: []event{{"a", "b"}, {"c", "d"}}},
 }
@@ -42,18 +51,23 @@ func getAlbums(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, albums)
 }
 
+func MyBind(c *gin.Context) (albumer, error) {
+    var a albumer
+    if err := c.ShouldBind(&a); err == nil {
+        return a, nil
+    }
+    return a, errors.New("lalala error")
+}
+
 func postAlbums(c *gin.Context) {
-    var newAlbum album
     fmt.Println("inside post")
-    /*
-    buf, _ := ioutil.ReadAll(c.Request.Body)
-    fmt.Println(buf)
-    */
-    if err := c.BindJSON(&newAlbum); err != nil {
-        fmt.Println("can't resolve album data")
+    newAlbum, err := MyBind(c)
+    if err != nil {
+        fmt.Println("can't resolve album data", err)
         return
     }
     fmt.Println(newAlbum)
+    fmt.Println(newAlbum.GetTitle())
     albums = append(albums, newAlbum)
     c.IndentedJSON(http.StatusCreated, newAlbum)
 }

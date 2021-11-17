@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "reflect"
 )
 
 
@@ -37,11 +38,18 @@ func (x *NormalAnimals) NormalEat(mood string) {
 
 func main() {
     var cow Animaler
-    cow = &Animals{SuperAnimals{"walk"}, "grass"}
+    var cat1 Animals
+    var cat2 Animaler
+    cat1 = Animals{SuperAnimals{"run"}, "fish"}
+    cat2 = cat1
+    fmt.Println(cat1, reflect.TypeOf(cat1))
+    fmt.Println(cat2, reflect.TypeOf(cat2))
+    cow = Animals{SuperAnimals{"walk"}, "grass"}
+    fmt.Println("type of cow: ", reflect.TypeOf(cow))
     cow.Eat()
     cow.Move()
     someAnimals := []Animals{
-        {food: "sworm"},
+        {food: "worm"},
         Animals{SuperAnimals{"dive"}, "sand"},
     }
     someAnimals[0].Eat()
