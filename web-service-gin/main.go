@@ -1,18 +1,25 @@
 package main
 
 import (
-    "errors"
-    "fmt"
-    //"io/ioutil"
-    "net/http"
+	"errors"
+	"fmt"
+	"reflect"
 
-    "github.com/gin-gonic/gin"
+	//"io/ioutil"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 
 type albumer interface {
     GetTitle() string
     GetID() string
+}
+
+type specialAlbum struct {
+    Name    string  `json:"name"`
 }
 
 type event struct {
@@ -60,24 +67,36 @@ func GetAlbums(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, albums)
 }
 
-func MyBind(c *gin.Context) (albumer, error) {
-    var a album
-    if err := c.ShouldBind(&a); err == nil {
-        return a, nil
-    }
-    return a, errors.New("lalala error")
+func AlbumBind(c *gin.Context) (interface{}, error) {
+	bindSuccess := false
+	for _, a := range []interface{}{
+		album{},
+		specialAlbum{},
+	} {
+		b := binding.Default(c.Request.Method, c.ContentType())
+		err := c.ShouldBindWith(a, b)
+		if err == nil {
+			bindSuccess = true
+			return a, nil
+		}
+		// TODO: should recover iobuf after each trial bind
+	}
+	if !bindSuccess {
+		return nil, errors.New("binding album error")
+	}
 }
 
 func PostAlbums(c *gin.Context) {
     fmt.Println("inside post")
-    newAlbum, err := MyBind(c)
+    newAlbum, err := AlbumBind(c)
     if err != nil {
         fmt.Println("can't resolve album data", err)
         return
     }
-    fmt.Println(newAlbum)
-    fmt.Println(newAlbum.GetTitle())
-    albums = append(albums, newAlbum)
+    fmt.Printf("newAlbum: %+v\n", newAlbum)
+    if reflect.TypeOf(newAlbum) == reflect.TypeOf(album{}){
+        albums = append(albums, newAlbum)
+    }
     c.IndentedJSON(http.StatusCreated, newAlbum)
 }
 
