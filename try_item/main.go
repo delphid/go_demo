@@ -7,7 +7,13 @@ import (
 
 type A struct {
     K   string
+    Items   Items   `default:"Items"`
 }
+
+type Item struct {
+}
+
+type Items []Item
 
 func main() {
     for i := 0; i < 10; i++ {
@@ -22,4 +28,10 @@ func main() {
     for _, a := range sl {
         fmt.Println("a.K: ", a.K)
     }
+    items := Items{}
+    fmt.Println("items: ", items)
+    a := A{K: "aaa", Items: Items{}}
+    b := A{}
+    fmt.Println(a)
+    fmt.Println(b)
 }
