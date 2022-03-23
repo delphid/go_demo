@@ -1,4 +1,4 @@
-module try_di
+module github.com/delphid/go_demo/try_di
 
 go 1.16
 
