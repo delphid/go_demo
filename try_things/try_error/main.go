@@ -13,6 +13,15 @@ func F(a int) (b int, err error) {
     }
 }
 
+func G() error {
+    return errors.New("error g")
+}
+
+func H() error {
+    err := G()
+    return fmt.Errorf("error h caused by: %w", err)
+}
+
 func main() {
     a, err := F(1)
     if err != nil {
@@ -26,4 +35,5 @@ func main() {
         fmt.Println("err: ", err)
     }
     fmt.Println("b: ", b)
+    fmt.Println(H())
 }

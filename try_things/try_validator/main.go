@@ -17,24 +17,6 @@ func (s S) GetL() string {
 
 var validate *validator.Validate
 
-func main() {
-    validate = validator.New()
-    validate.RegisterValidation("just-print", ValidateSField)
-    validate.RegisterStructValidation(ValidateSStruct, S{})
-    s := &S{"aaa", "bbb"}
-    fmt.Printf("s: %+v\n", s)
-    errs := validate.Struct(s)
-    fmt.Println(errs)
-    fmt.Println("s in the end: ", s)
-/*
-    a := 1
-    var b int64
-    b = 2
-    reflect.ValueOf(a).SetInt(b)
-    fmt.Println(a)
-*/
-}
-
 func ValidateSField(fl validator.FieldLevel) bool {
     fmt.Printf("fl: %+v\n", fl)
     fmt.Println(fl.Field())
@@ -51,7 +33,25 @@ func ValidateSStruct(sl validator.StructLevel) {
     s.Set(s2)
     v := s.Interface()
     fmt.Println("v: ", v)
-    fmt.Println(v.GetL())
+    // fmt.Println(v.GetL())
     //s2.Set(s)
 
+}
+
+func main() {
+    validate = validator.New()
+    validate.RegisterValidation("just-print", ValidateSField)
+    // validate.RegisterStructValidation(ValidateSStruct, S{})
+    s := &S{"aaa", "bbb"}
+    fmt.Printf("s: %+v\n", s)
+    errs := validate.Struct(s)
+    fmt.Println(errs)
+    fmt.Println("s in the end: ", s)
+/*
+    a := 1
+    var b int64
+    b = 2
+    reflect.ValueOf(a).SetInt(b)
+    fmt.Println(a)
+*/
 }

@@ -8,6 +8,10 @@ type Stage interface {
     Exec()
 }
 
+type StageExecutor struct {
+    stage Stage
+}
+
 func ExecStage(s Stage) {
     s.Exec()
 }
@@ -38,4 +42,12 @@ func main() {
     ExecStage(&fooStage1)
     fmt.Println("")
     ExecStage(multiStage)
+    fmt.Println("")
+
+    se := StageExecutor{&fooStage1}
+    se.stage.Exec()
+    fmt.Println("")
+    se = StageExecutor{multiStage}
+    se.stage.Exec()
+    fmt.Println("")
 }

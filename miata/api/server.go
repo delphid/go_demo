@@ -5,16 +5,25 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	config "miata/init"
+	"miata/model"
 )
 
 type Server struct {
 	router *gin.Engine
 	httpServer *http.Server
+	cfg *config.Config
+	log *zap.Logger
+	store *model.Store
+
+
 }
 
-func NewServer(lc fx.Lifecycle) *Server {
+func NewServer(lc fx.Lifecycle, cfg *config.Config, log *zap.Logger, store *model.Store) *Server {
 	gin.SetMode("debug")
 	r := gin.New()
 	httpServer := &http.Server{
@@ -26,6 +35,9 @@ func NewServer(lc fx.Lifecycle) *Server {
 	server := Server{
 		router: r,
 		httpServer: httpServer,
+		cfg: cfg,
+		log: log,
+		store: store,
 	}
 	server.registerRoutes()
 	lc.Append(fx.Hook{
@@ -54,6 +66,7 @@ func (s *Server) registerRoutes() {
 	publicGroup := s.router.Group("")
 	publicGroup.GET("", s.ProcessRootQuery)
 	s.registerEventRoutes(publicGroup)
+	s.registerItemRoutes(publicGroup)
 }
 
 func (s *Server) ProcessRootQuery(c *gin.Context) {
