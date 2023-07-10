@@ -3,60 +3,60 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
-	"math/rand"
-	"strings"
 )
 
 func f(from string) {
-    for i := 0; i < 3; i++ {
-        fmt.Println(from, ":", i)
-    }
+	for i := 0; i < 3; i++ {
+		fmt.Println(from, ":", i)
+	}
 }
 
 func RoutineDemo() {
-    f("direct1")
+	f("direct1")
 
-    go f("goroutine1")
-    go f("goroutine2")
-    go f("goroutine3")
+	go f("goroutine1")
+	go f("goroutine2")
+	go f("goroutine3")
 
-    f("direct2")
+	f("direct2")
 
-    go func(msg string) {
-        fmt.Println(msg)
-    }("going")
+	go func(msg string) {
+		fmt.Println(msg)
+	}("going")
 
-    time.Sleep(time.Second)
-    fmt.Println("done")
+	time.Sleep(time.Second)
+	fmt.Println("done")
 }
 
 func ChannelDemo() {
-    messages := make(chan string)
-    go func() {
-        fmt.Println("start goroutine")
-        time.Sleep(2 * time.Second)
-        fmt.Println("goroutine slept 2")
-        messages <- "ping"
-        time.Sleep(2 * time.Second)
-        fmt.Println("goroutine slept 4")
-    }()
-    msg := <-messages
-    time.Sleep(1 * time.Second)
-    fmt.Println(msg)
+	messages := make(chan string)
+	go func() {
+		fmt.Println("start goroutine")
+		time.Sleep(2 * time.Second)
+		fmt.Println("goroutine slept 2")
+		messages <- "ping"
+		time.Sleep(2 * time.Second)
+		fmt.Println("goroutine slept 4")
+	}()
+	msg := <-messages
+	time.Sleep(1 * time.Second)
+	fmt.Println(msg)
 }
 
 func SelectDemo() {
-    c := make(chan int)
+	c := make(chan int)
 	done := make(chan int)
-    quit := make(chan os.Signal, 1)
-    signal.Notify(quit, syscall.SIGTERM, os.Interrupt)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, os.Interrupt)
 	go func() {
 		for i := 0; i < 10; i++ {
-            time.Sleep(1 * time.Second)
+			time.Sleep(1 * time.Second)
 			fmt.Println(<-c)
 		}
 		done <- 0
@@ -73,14 +73,14 @@ func fibonacci(c chan int, done chan int, quit chan os.Signal) {
 		case <-done:
 			fmt.Println("done")
 			return
-        case <-quit:
-            fmt.Println("prepare to quit")
-            time.Sleep(2 * time.Second)
-            return
-            //os.Exit(0)
-        default:
-            fmt.Println("f blocking")
-            time.Sleep(200 * time.Millisecond)
+		case <-quit:
+			fmt.Println("prepare to quit")
+			time.Sleep(2 * time.Second)
+			return
+			//os.Exit(0)
+		default:
+			fmt.Println("f blocking")
+			time.Sleep(200 * time.Millisecond)
 		}
 	}
 }
@@ -128,7 +128,7 @@ func ChannelSize() {
 				consumerNum += 1
 				fmt.Printf("start consumer %v\n", consumerNum)
 				go numConsumer(c, consumerQuit, consumerNum)
-			} else if len(c) <= maxChanLen/2 && consumerNum>1 {
+			} else if len(c) <= maxChanLen/2 && consumerNum > 1 {
 				fmt.Println("stop a consumer")
 				consumerQuit <- true
 				consumerNum -= 1
@@ -174,4 +174,31 @@ func GenDemo() {
 	}
 	cancel()
 	time.Sleep(1 * time.Second)
+}
+
+func gen(done <-chan struct{}, nums ...int) <-chan int {
+	fmt.Println("start gen")
+	out := make(chan int)
+	go func() {
+		defer func() { fmt.Println("gen stop"); close(out) }()
+		for _, n := range nums {
+			time.Sleep(time.Second)
+			fmt.Println("gen")
+			select {
+			case out <- n:
+			case <-done:
+				fmt.Println("receive done")
+				return
+			}
+		}
+	}()
+	return out
+}
+
+func DoneDemo() {
+	done := make(chan struct{})
+	c := gen(done, 1, 2, 3)
+	fmt.Println(<-c)
+	close(done)
+	time.Sleep(2 * time.Second)
 }
